@@ -1,4 +1,5 @@
 import argparse
+import logging
 import signal
 import sys
 import time
@@ -11,8 +12,11 @@ PARTY_FREQ = 100  # Number of votes between each vote party
 ENDPOINT = "http://blissscape.net/vote/templates/stats_index.php"
 SERVER_TZ = "America/New_York"
 
+log = logging.getLogger(__name__)
+
 
 def sigint_handler(signalnum, frame):
+    log.warn("Received SIGINT; exiting...")
     sys.exit(0)
 
 
@@ -51,6 +55,8 @@ def notify(rate: float, current_votes: int, threshold: int):
         if prev_votes is None:
             prev_votes = votes
             prev_time = time
+
+            log.info(f"Votes: {votes} ({current_votes})")
             continue
 
         if time.day != prev_time.day:
@@ -62,12 +68,14 @@ def notify(rate: float, current_votes: int, threshold: int):
         current_votes += prev_votes - votes
         prev_votes = votes
         prev_time = time
+
         if (
             current_votes > 0
             and 0 <= (current_votes + threshold) % PARTY_FREQ <= threshold
         ):
-            print("Vote party soon!")
-            sys.stdout.flush()
+            log.info(f"Vote party in less than {threshold} votes!")
+
+        log.info(f"Votes: {votes} ({current_votes})")
 
 
 def validate_threshold(threshold: str):
