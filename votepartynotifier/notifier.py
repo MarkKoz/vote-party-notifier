@@ -3,11 +3,13 @@ import signal
 import sys
 import time
 
+import arrow
 import requests
 from bs4 import BeautifulSoup
 
 PARTY_FREQ = 100  # Number of votes between each vote party
 ENDPOINT = "http://blissscape.net/vote/templates/stats_index.php"
+SERVER_TZ = "America/New_York"
 
 
 def sigint_handler(signalnum, frame):
@@ -40,17 +42,25 @@ def poll(rate: float):
 
 
 def notify(rate: float, current_votes: int, threshold: int):
-    prev = None
+    prev_votes = None
+    prev_time = None
     for response in poll(rate):
         votes = parse(response)
+        time = arrow.now(SERVER_TZ)
 
-        if prev is None:
-            prev = votes
+        if prev_votes is None:
+            prev_votes = votes
+            prev_time = time
             continue
 
-        diff = prev - votes
-        current_votes += diff
+        if time.day != prev_time.day:
+            current_votes = 0
 
+        if time.month != prev_time.month:
+            prev_votes = votes
+
+        prev_time = time
+        current_votes += prev_votes - votes
         if (
             current_votes > 0
             and 0 <= (current_votes + threshold) % PARTY_FREQ <= threshold
