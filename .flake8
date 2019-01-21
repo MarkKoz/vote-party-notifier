@@ -1,0 +1,7 @@
+[flake8]
+max-line-length = 80
+application_import_names = votepartynotifier
+ignore = W503
+exclude = __pycache__, .venv
+import-order-style = pycharm
+inline-quotes = "
