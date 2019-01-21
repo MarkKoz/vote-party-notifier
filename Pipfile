@@ -18,3 +18,7 @@ arrow = "*"
 
 [requires]
 python_version = "3.7"
+
+[scripts]
+start = "python -m votepartynotifier"
+lint = "python -m flake8"
