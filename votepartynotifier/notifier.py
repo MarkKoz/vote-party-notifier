@@ -85,13 +85,14 @@ def main():
         "--votes",
         "-v",
         type=int,
+        required=True,
         help="The current amount of votes."
     )
     parser.add_argument(
         "--threshold",
         "-t",
         type=validate_threshold,
-        default=10
+        default=10,
         help="The amount of votes that must remain before notifying."
     )
     args = parser.parse_args()
