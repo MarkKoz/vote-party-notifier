@@ -1,3 +1,3 @@
-from votepartynotifier import main
+from votepartynotifier import notifier
 
-main()
+notifier.main()
