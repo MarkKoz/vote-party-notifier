@@ -65,7 +65,7 @@ def notify(rate: float, current_votes: int, threshold: int):
         if time.month != prev_time.month:
             prev_votes = votes
 
-        current_votes += prev_votes - votes
+        current_votes += votes - prev_votes
         prev_votes = votes
         prev_time = time
 
