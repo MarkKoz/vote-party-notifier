@@ -3,8 +3,8 @@ import signal
 import sys
 import time
 
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 
 PARTY_FREQ = 100  # Number of votes between each vote party
 ENDPOINT = "http://blissscape.net/vote/templates/stats_index.php"
