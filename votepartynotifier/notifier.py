@@ -39,7 +39,7 @@ def poll(rate: float):
             time.sleep(rate)
 
 
-def notify(rate: float, current_votes: int):
+def notify(rate: float, current_votes: int, threshold: int):
     prev = None
     for response in poll(rate):
         votes = parse(response)
@@ -51,9 +51,23 @@ def notify(rate: float, current_votes: int):
         diff = prev - votes
         current_votes += diff
 
-        if current_votes > 0 and current_votes % PARTY_FREQ == 0:
-            print("Vote party now!")
+        if (
+            current_votes > 0
+            and 0 <= (current_votes + threshold) % PARTY_FREQ >= threshold
+        ):
+            print("Vote party soon!")
             sys.stdout.flush()
+
+
+def validate_threshold(threshold: str):
+    threshold = int(threshold)
+    if threshold >= PARTY_FREQ:
+        raise argparse.ArgumentTypeError(
+            f"{threshold} is not less than the vote party frequency"
+            "({PARTY_FREQ})"
+        )
+
+    return threshold
 
 
 def main():
@@ -73,6 +87,13 @@ def main():
         type=int,
         help="The current amount of votes."
     )
+    parser.add_argument(
+        "--threshold",
+        "-t",
+        type=validate_threshold,
+        default=10
+        help="The amount of votes that must remain before notifying."
+    )
     args = parser.parse_args()
 
-    notify(args.rate, args.votes)
+    notify(args.rate, args.votes, args.threshold)
