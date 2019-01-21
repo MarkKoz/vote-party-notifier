@@ -1,3 +1,4 @@
+import argparse
 import signal
 import sys
 import time
@@ -5,7 +6,6 @@ import time
 from bs4 import BeautifulSoup
 import requests
 
-POLL_RATE = 5
 ENDPOINT = "http://blissscape.net/vote/templates/stats_index.php"
 
 
@@ -26,9 +26,8 @@ def parse(html) -> int:
     except ValueError:
         raise ValueError("Could not convert the votes to an integer.")
 
-def main():
-    signal.signal(signal.SIGINT, sigint_handler)
 
+def poll(rate: float, current_votes: int):
     with requests.Session() as session:
         while True:
             response = session.get(ENDPOINT)
@@ -38,4 +37,26 @@ def main():
             print(votes)
             sys.stdout.flush()
 
-            time.sleep(POLL_RATE)
+            time.sleep(rate)
+
+
+def main():
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    parser = argparse.ArgumentParser("BlissScape vote party notifier")
+    parser.add_argument(
+        "--rate",
+        "-r",
+        type=float,
+        default=5,
+        help="The rate, in seconds, at which to poll the API."
+    )
+    parser.add_argument(
+        "--votes",
+        "-v",
+        type=int,
+        help="The current amount of votes."
+    )
+    args = parser.parse_args()
+
+    poll(args.rate, args.votes)
