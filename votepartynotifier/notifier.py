@@ -53,7 +53,7 @@ def notify(rate: float, current_votes: int, threshold: int):
 
         if (
             current_votes > 0
-            and 0 <= (current_votes + threshold) % PARTY_FREQ >= threshold
+            and 0 <= (current_votes + threshold) % PARTY_FREQ <= threshold
         ):
             print("Vote party soon!")
             sys.stdout.flush()
