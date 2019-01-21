@@ -59,8 +59,9 @@ def notify(rate: float, current_votes: int, threshold: int):
         if time.month != prev_time.month:
             prev_votes = votes
 
-        prev_time = time
         current_votes += prev_votes - votes
+        prev_votes = votes
+        prev_time = time
         if (
             current_votes > 0
             and 0 <= (current_votes + threshold) % PARTY_FREQ <= threshold
