@@ -6,6 +6,7 @@ import time
 from bs4 import BeautifulSoup
 import requests
 
+PARTY_FREQ = 100  # Number of votes between each vote party
 ENDPOINT = "http://blissscape.net/vote/templates/stats_index.php"
 
 
@@ -27,17 +28,32 @@ def parse(html) -> int:
         raise ValueError("Could not convert the votes to an integer.")
 
 
-def poll(rate: float, current_votes: int):
+def poll(rate: float):
     with requests.Session() as session:
         while True:
             response = session.get(ENDPOINT)
             response.raise_for_status()
 
-            votes = parse(response.text)
-            print(votes)
-            sys.stdout.flush()
+            yield response.text
 
             time.sleep(rate)
+
+
+def notify(rate: float, current_votes: int):
+    prev = None
+    for response in poll(rate):
+        votes = parse(response)
+
+        if prev is None:
+            prev = votes
+            continue
+
+        diff = prev - votes
+        current_votes += diff
+
+        if current_votes > 0 and current_votes % PARTY_FREQ == 0:
+            print("Vote party now!")
+            sys.stdout.flush()
 
 
 def main():
@@ -59,4 +75,4 @@ def main():
     )
     args = parser.parse_args()
 
-    poll(args.rate, args.votes)
+    notify(args.rate, args.votes)
