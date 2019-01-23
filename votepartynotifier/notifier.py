@@ -5,6 +5,7 @@ import sys
 import time
 
 import arrow
+import ntfy
 import requests
 from bs4 import BeautifulSoup
 
@@ -73,7 +74,9 @@ def notify(rate: float, current_votes: int, threshold: int):
             current_votes > 0
             and 0 <= (current_votes + threshold) % PARTY_FREQ <= threshold
         ):
-            log.info(f"Vote party in less than {threshold} votes!")
+            message = f"Vote party in less than {threshold} votes!"
+            log.info(message)
+            ntfy.notify(message, "BlissScape Vote Party")
 
         log.info(f"Votes: {votes} ({current_votes})")
 
