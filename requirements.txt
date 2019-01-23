@@ -1,1 +1,4 @@
-win10toast
+requests
+beautifulsoup4
+ntfy
+arrow
