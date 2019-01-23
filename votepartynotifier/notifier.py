@@ -49,6 +49,8 @@ def poll(rate: float):
 def notify(rate: float, current_votes: int, threshold: int):
     prev_votes = None
     prev_time = None
+    notified = False
+
     for response in poll(rate):
         votes = parse(response)
         time = arrow.now(SERVER_TZ)
@@ -62,6 +64,7 @@ def notify(rate: float, current_votes: int, threshold: int):
 
         if time.day != prev_time.day:
             current_votes = 0
+            notified = False
 
         if time.month != prev_time.month:
             prev_votes = votes
@@ -70,13 +73,18 @@ def notify(rate: float, current_votes: int, threshold: int):
         prev_votes = votes
         prev_time = time
 
-        if (
-            current_votes > 0
-            and 0 <= (current_votes + threshold) % PARTY_FREQ <= threshold
-        ):
-            message = f"Vote party in less than {threshold} votes!"
-            log.info(message)
-            ntfy.notify(message, "BlissScape Vote Party")
+        if current_votes > 0:
+            remainder = (current_votes + threshold) % PARTY_FREQ
+            if not notified and 0 <= remainder < threshold:
+                notified = True
+                message = f"Vote party in less than {threshold} votes!"
+
+                log.info(message)
+                ntfy.notify(message, "BlissScape Vote Party")
+            elif remainder >= threshold:
+                if notified:
+                    log.info("New vote party interval")
+                notified = False
 
         log.info(f"Votes: {votes} ({current_votes})")
 
