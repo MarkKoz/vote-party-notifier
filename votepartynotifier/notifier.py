@@ -3,11 +3,13 @@ import logging
 import signal
 import sys
 import time
+from pathlib import Path
 
 import arrow
 import ntfy
 import requests
 from bs4 import BeautifulSoup
+from ntfy import data as ntfy_data
 
 PARTY_FREQ = 100  # Number of votes between each vote party
 ENDPOINT = "http://blissscape.net/vote/templates/stats_index.php"
@@ -126,5 +128,8 @@ def main():
         help="The amount of votes that must remain before notifying."
     )
     args = parser.parse_args()
+
+    ntfy_data.icon.png = str(Path("res/BlissScape.png").resolve(True))
+    ntfy_data.icon.ico = str(Path("res/BlissScape.ico").resolve(True))
 
     notify(args.rate, args.votes, args.threshold)
