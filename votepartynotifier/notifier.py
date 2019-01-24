@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 
 def sigint_handler(signalnum, frame):
-    log.warn("Received SIGINT; exiting...")
+    log.warning("Received SIGINT; exiting...")
     sys.exit(0)
 
 
@@ -37,14 +37,24 @@ def parse(html) -> int:
         raise ValueError("Could not convert the votes to an integer.")
 
 
-def poll(rate: float):
+def request(rate: float, session: requests.Session) -> requests.Response:
+    response = session.get(ENDPOINT)
+    while response.status_code != 200:
+        log.error(
+            f"Response status was {response.status_code}. "
+            f"Trying again in {rate} seconds."
+        )
+        time.sleep(rate)
+        response = session.get(ENDPOINT)
+
+    return response
+
+
+def poll(rate: float) -> str:
     with requests.Session() as session:
         while True:
-            response = session.get(ENDPOINT)
-            response.raise_for_status()
-
+            response = request(rate, session)
             yield response.text
-
             time.sleep(rate)
 
 
