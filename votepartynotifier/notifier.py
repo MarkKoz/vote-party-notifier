@@ -37,37 +37,27 @@ def parse(html) -> int:
         raise ValueError("Could not convert the votes to an integer.")
 
 
-def _request(rate: float, session: requests.Session) -> requests.Response:
-    while True:
-        try:
-            return session.get(ENDPOINT)
-        except requests.exceptions.ConnectionError:
-            log.exception(
-                f"Error connecting to the vote stats endpoint. "
-                "Trying again in {rate} seconds."
-            )
-            time.sleep(rate)
-
-
-def request(rate: float, session: requests.Session) -> requests.Response:
-    response = _request(rate, session)
-    while response.status_code != 200:
-        log.error(
-            f"Response status was {response.status_code}. "
-            f"Trying again in {rate} seconds."
-        )
-        time.sleep(rate)
-        response = _request(rate, session)
-
-    return response
-
-
 def poll(rate: float) -> str:
     with requests.Session() as session:
         while True:
-            response = request(rate, session)
-            yield response.text
             time.sleep(rate)
+
+            try:
+                response = session.get(ENDPOINT)
+            except requests.exceptions.ConnectionError:
+                log.exception(
+                    f"Error connecting to the vote stats endpoint. "
+                    "Trying again in {rate} seconds."
+                )
+                continue
+
+            if response.status_code != 200:
+                log.error(
+                    f"Response status was {response.status_code}. "
+                    f"Trying again in {rate} seconds."
+                )
+            else:
+                yield response.text
 
 
 def notify(rate: float, current_votes: int, threshold: int):
