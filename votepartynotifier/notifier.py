@@ -37,15 +37,27 @@ def parse(html) -> int:
         raise ValueError("Could not convert the votes to an integer.")
 
 
+def _request(rate: float, session: requests.Session) -> requests.Response:
+    while True:
+        try:
+            return session.get(ENDPOINT)
+        except requests.exceptions.ConnectionError:
+            log.exception(
+                f"Error connecting to the vote stats endpoint. "
+                "Trying again in {rate} seconds."
+            )
+            time.sleep(rate)
+
+
 def request(rate: float, session: requests.Session) -> requests.Response:
-    response = session.get(ENDPOINT)
+    response = _request(rate, session)
     while response.status_code != 200:
         log.error(
             f"Response status was {response.status_code}. "
             f"Trying again in {rate} seconds."
         )
         time.sleep(rate)
-        response = session.get(ENDPOINT)
+        response = _request(rate, session)
 
     return response
 
