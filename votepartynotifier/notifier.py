@@ -139,7 +139,13 @@ def main():
     )
     args = parser.parse_args()
 
-    ntfy_data.icon.png = str(Path("res/BlissScape.png").resolve(True))
-    ntfy_data.icon.ico = str(Path("res/BlissScape.ico").resolve(True))
+    try:
+        ntfy_data.icon.png = str(Path("res/BlissScape.png").resolve(True))
+        ntfy_data.icon.ico = str(Path("res/BlissScape.ico").resolve(True))
+    except FileNotFoundError:
+        log.exception(
+            "Could not find icon files; falling back to ntfy's defaults. "
+            "Is the current working directory not the root of the repository?"
+        )
 
     notify(args.rate, args.votes, args.threshold)
